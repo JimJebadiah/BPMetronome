@@ -1,7 +1,6 @@
 package com.jimjeb.bpmetronome.view;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.jimjeb.bpmetronome.model.metronome.Metronome;
@@ -16,19 +15,21 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class MetronomeScene implements BPMScenes{
 
     public static Background NAVY = new Background(new BackgroundFill(Color.NAVY, CornerRadii.EMPTY, Insets.EMPTY));
     public static Background AQUA = new Background(new BackgroundFill(Color.AQUA, CornerRadii.EMPTY, Insets.EMPTY));
+
+    public static final Insets STANDARD = new Insets(10);
 
     public static final int HEIGHT = 424;
     public static final int WIDTH = 256;
@@ -43,6 +44,8 @@ public class MetronomeScene implements BPMScenes{
     @Override
     public Scene scene(Stage s) throws Exception
     {
+        s.setTitle("Metronome");
+
         Metronome metronome = new Metronome();
 
         VBox box = new VBox();
@@ -52,6 +55,7 @@ public class MetronomeScene implements BPMScenes{
         HBox ticker = new HBox();
 
         Label BPM = new Label(Integer.toString(metronome.getBpm()));
+        BPM.setFont(new Font("Impact", 144));
 
         double tickerWidth = ((double) WIDTH / (double) metronome.getBeatsPerMeasure()) - OFFSET;
         System.out.println(tickerWidth);
@@ -65,7 +69,7 @@ public class MetronomeScene implements BPMScenes{
         Thread thread = new Thread(metronome);
         thread.start();
 
-        Button button = new Button("play");
+        Button button = new Button("Play");
         button.setOnAction((e) -> metronome.play());
 
         TextField textField = new TextField();
@@ -80,7 +84,7 @@ public class MetronomeScene implements BPMScenes{
             public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2) {
                 int bpm = arg2.intValue();
                 metronome.setBpm(bpm);
-                textField.setText(Integer.toString(metronome.getBpm()));
+                textField.setText("");
                 BPM.setText(Integer.toString(bpm));
                 slider.setValue(bpm);
             }       
@@ -97,11 +101,14 @@ public class MetronomeScene implements BPMScenes{
             BPM.setText(Integer.toString(bpm));
             slider.setValue(bpm);
         });
-
+        inputAndButton.setAlignment(Pos.CENTER);
+        inputAndButton.setPadding(STANDARD);
         inputAndButton.getChildren().addAll(textField, enter);
 
+        Label boxLabel = new Label("Beats Per Measure:");
+
         ComboBox<Integer> comboBox = new ComboBox<>();
-        comboBox.setPromptText("BPM");
+        comboBox.setPromptText(Integer.toString(metronome.getBeatsPerMeasure()));
         comboBox.getItems().addAll(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
         comboBox.setOnAction((e) -> {
             metronome.setBeatsPerMeasure(comboBox.getValue());
@@ -112,10 +119,10 @@ public class MetronomeScene implements BPMScenes{
             ticker.setSpacing(space);
         });
     
-        box.getChildren().addAll(BPM, ticker, button, slider, inputAndButton, comboBox);
+        box.getChildren().addAll(BPM, ticker, button, slider, inputAndButton, boxLabel, comboBox);
         box.setAlignment(Pos.TOP_CENTER);
+        box.setSpacing(10);
         Scene scene = new Scene(box);
-
         return scene;
     }
 
