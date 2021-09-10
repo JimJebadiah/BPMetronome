@@ -1,6 +1,8 @@
-package com.jimjeb.bpmetronome.model;
+package com.jimjeb.bpmetronome.model.metronome;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -8,6 +10,7 @@ import javafx.scene.media.MediaPlayer;
 public class Metronome implements Runnable
 {
     public static final int MINUTE_CONSTANT = 60000;
+    public static final int MIN_BPM = 30;
     public static final int MAX_BPM = 500;
 
     private boolean playing = false;
@@ -17,12 +20,15 @@ public class Metronome implements Runnable
     private int currentBeat;
     private MediaPlayer hit;
     private MediaPlayer beat;
+    private long waitTime;
+
+    private Set<CurrentBeatObserver> cOberservers;
     
     public Metronome() 
     {
         beatsPerMeasure = 4;
         noteDuration = 4;
-        bpm = 60;
+        bpm = 120;
         currentBeat = 0;
 
         String hitPath = "data/sounds/hit.wav";
@@ -33,12 +39,14 @@ public class Metronome implements Runnable
 
         hit = new MediaPlayer(hitMedia);
         beat = new MediaPlayer(beatMedia);
+
+        cOberservers = new HashSet<>();
     }
 
     @Override
     public void run()
     {
-        long waitTime = (long) (MINUTE_CONSTANT * (1 / (float) bpm));
+        waitTime = (long) (MINUTE_CONSTANT * (1 / (float) bpm));
         while(true) 
         {
             synchronized(this) 
@@ -52,6 +60,7 @@ public class Metronome implements Runnable
                     {
                         hit.play();
                     }
+                    notifyCurrentBeatObservers();
                     currentBeat = (currentBeat + 1) % beatsPerMeasure;
                     try
                     {
@@ -72,6 +81,7 @@ public class Metronome implements Runnable
     {
         playing = !playing;
         currentBeat = 0;
+        notifyCurrentBeatObservers();
     }
 
     public void setBpm(int bpm) 
@@ -80,7 +90,16 @@ public class Metronome implements Runnable
         {
             bpm = MAX_BPM;
         }
+        if(bpm < MIN_BPM) 
+        {
+            bpm = MIN_BPM;
+        }
+        waitTime = (long) (MINUTE_CONSTANT * (1 / (float) bpm));
         this.bpm = bpm;
+    }
+
+    public int getBpm() {
+        return bpm;
     }
 
     public void setBeatsPerMeasure(int beatsPerMeasure) {
@@ -97,5 +116,31 @@ public class Metronome implements Runnable
 
     public int getNoteDuration() {
         return noteDuration;
+    }
+
+    public int getCurrentBeat() {
+        return currentBeat;
+    }
+
+    public boolean isPlaying() {
+        return playing;
+    }
+
+    public void registerCurrentBeat(CurrentBeatObserver c)
+    {
+        cOberservers.add(c);
+    }
+
+    public void notifyCurrentBeatObservers()
+    {
+        for(CurrentBeatObserver c: cOberservers)
+        {
+            c.update(currentBeat);
+        }
+    }
+
+    public void clearCurrentBeatObservers()
+    {
+        cOberservers.clear();
     }
 }

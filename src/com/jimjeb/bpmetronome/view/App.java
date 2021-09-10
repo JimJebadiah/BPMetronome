@@ -2,6 +2,7 @@ package com.jimjeb.bpmetronome.view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -25,5 +26,14 @@ public class App extends Application
 
         s.show();
     }
-    
+
+    @Override
+    public void stop() throws Exception 
+    {
+        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+        for(Thread t : threadSet)
+        {
+            t.interrupt();
+        }
+    }
 }
