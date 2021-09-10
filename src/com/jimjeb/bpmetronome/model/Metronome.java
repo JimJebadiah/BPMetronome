@@ -23,10 +23,10 @@ public class Metronome implements Runnable
         beatsPerMeasure = 4;
         noteDuration = 4;
         bpm = 60;
-        currentBeat = 1;
+        currentBeat = 0;
 
-        String hitPath = "data/sounds/hit.ogg";
-        String beatPath = "data/sounds/beat.ogg";
+        String hitPath = "data/sounds/hit.wav";
+        String beatPath = "data/sounds/beat.wav";
 
         Media hitMedia = new Media(new File(hitPath).toURI().toString());
         Media beatMedia = new Media(new File(beatPath).toURI().toString());
@@ -38,19 +38,20 @@ public class Metronome implements Runnable
     @Override
     public void run()
     {
+        long waitTime = (long) (MINUTE_CONSTANT * (1 / (float) bpm));
         while(true) 
         {
+            System.out.print("");
             while(playing) 
             {
-                if(currentBeat != 1)
+                if(currentBeat != 0)
                 {
                     beat.play();
                 } else 
                 {
                     hit.play();
                 }
-                currentBeat += currentBeat % beatsPerMeasure;
-                long waitTime = MINUTE_CONSTANT * (1 / bpm);
+                currentBeat = (currentBeat + 1) % beatsPerMeasure;
                 try
                 {
                     Thread.sleep(waitTime);
@@ -58,14 +59,17 @@ public class Metronome implements Runnable
                 {
                     playing = false;
                 }
+                hit.stop();
+                beat.stop();
             }
         }
     }
+    
 
-    public void play() 
+    public synchronized void play() 
     {
         playing = !playing;
-        currentBeat = 1;
+        currentBeat = 0;
     }
 
     public void setBpm(int bpm) {
