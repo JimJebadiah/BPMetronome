@@ -41,38 +41,41 @@ public class Metronome implements Runnable
         long waitTime = (long) (MINUTE_CONSTANT * (1 / (float) bpm));
         while(true) 
         {
-            System.out.print("");
-            while(playing) 
+            synchronized(this) 
             {
-                if(currentBeat != 0)
+                while(playing) 
                 {
-                    beat.play();
-                } else 
-                {
-                    hit.play();
+                    if(currentBeat != 0)
+                    {
+                        beat.play();
+                    } else 
+                    {
+                        hit.play();
+                    }
+                    currentBeat = (currentBeat + 1) % beatsPerMeasure;
+                    try
+                    {
+                        Thread.sleep(waitTime);
+                    } catch(InterruptedException ie) 
+                    {
+                        playing = false;
+                    }
+                    hit.stop();
+                    beat.stop();
                 }
-                currentBeat = (currentBeat + 1) % beatsPerMeasure;
-                try
-                {
-                    Thread.sleep(waitTime);
-                } catch(InterruptedException ie) 
-                {
-                    playing = false;
-                }
-                hit.stop();
-                beat.stop();
             }
         }
     }
     
 
-    public synchronized void play() 
+    public void play() 
     {
         playing = !playing;
         currentBeat = 0;
     }
 
-    public void setBpm(int bpm) {
+    public void setBpm(int bpm) 
+    {
         if(bpm > MAX_BPM) 
         {
             bpm = MAX_BPM;
