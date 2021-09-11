@@ -31,7 +31,7 @@ public class MetronomeScene implements BPMScenes{
 
     public static final Insets STANDARD = new Insets(10);
 
-    public static final int HEIGHT = 424;
+    public static final int HEIGHT = 470;
     public static final int WIDTH = 256;
 
     public static final int OFFSET = 10;
@@ -118,8 +118,15 @@ public class MetronomeScene implements BPMScenes{
             ticker.getChildren().addAll(generateTickers(metronome, width));
             ticker.setSpacing(space);
         });
+
+        ComboBox<Integer> comboBox2 = new ComboBox<>();
+        comboBox2.setPromptText(Integer.toString(metronome.getBeatsPerMeasure()));
+        comboBox2.getItems().addAll(1, 2, 4, 3);
+        comboBox2.setOnAction((e) -> {
+            metronome.setDivide(comboBox2.getValue());
+        });
     
-        box.getChildren().addAll(BPM, ticker, button, slider, inputAndButton, boxLabel, comboBox);
+        box.getChildren().addAll(BPM, ticker, button, slider, inputAndButton, boxLabel, comboBox, comboBox2);
         box.setAlignment(Pos.TOP_CENTER);
         box.setSpacing(10);
         Scene scene = new Scene(box);
@@ -143,7 +150,7 @@ public class MetronomeScene implements BPMScenes{
             }
             if(c <= tickers.size() && metronome.isPlaying())
             {
-                tickers.get(c).setBackground(AQUA);
+                tickers.get((int) c).setBackground(AQUA);
             }
         });
         return tickers;

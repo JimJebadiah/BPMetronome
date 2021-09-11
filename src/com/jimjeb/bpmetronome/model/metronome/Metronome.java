@@ -17,10 +17,12 @@ public class Metronome implements Runnable
     private int beatsPerMeasure;
     private int noteDuration;
     private int bpm;
-    private int currentBeat;
+    private double currentBeat;
     private MediaPlayer hit;
     private MediaPlayer beat;
+    private MediaPlayer tap;
     private long waitTime;
+    private int divide;
 
     private Set<CurrentBeatObserver> cOberservers;
     
@@ -30,15 +32,19 @@ public class Metronome implements Runnable
         noteDuration = 4;
         bpm = 120;
         currentBeat = 0;
+        divide = 1;
 
         String hitPath = "data/sounds/hit.wav";
         String beatPath = "data/sounds/beat.wav";
+        String tapPath = "data/sounds/tap.wav";
 
         Media hitMedia = new Media(new File(hitPath).toURI().toString());
         Media beatMedia = new Media(new File(beatPath).toURI().toString());
+        Media tapMedia = new Media(new File(tapPath).toURI().toString());
 
         hit = new MediaPlayer(hitMedia);
         beat = new MediaPlayer(beatMedia);
+        tap = new MediaPlayer(tapMedia);
 
         cOberservers = new HashSet<>();
     }
@@ -53,24 +59,38 @@ public class Metronome implements Runnable
             {
                 while(playing) 
                 {
-                    if(currentBeat != 0)
-                    {
-                        beat.play();
-                    } else 
+                    if(currentBeat == 0)
                     {
                         hit.play();
+                    } else if((int) currentBeat == currentBeat || (currentBeat - (int) currentBeat) > 0.9)
+                    {
+                        beat.play();
+                    }
+                    else 
+                    {
+                        tap.play();
                     }
                     notifyCurrentBeatObservers();
-                    currentBeat = (currentBeat + 1) % beatsPerMeasure;
+                    currentBeat = (currentBeat + (1 / (double) divide));
+                    if((currentBeat - (int) currentBeat) > 0.9 || currentBeat - (int) currentBeat < 0.1) 
+                    {
+                        currentBeat = (int) Math.round(currentBeat);
+                    }
+                    if(currentBeat >= beatsPerMeasure)
+                    {
+                        currentBeat = 0;
+                    }
+                    System.out.println(currentBeat);
                     try
                     {
-                        Thread.sleep(waitTime);
+                        Thread.sleep(waitTime / divide);
                     } catch(InterruptedException ie) 
                     {
                         playing = false;
                     }
                     hit.stop();
                     beat.stop();
+                    tap.stop();
                 }
             }
         }
@@ -98,6 +118,10 @@ public class Metronome implements Runnable
         this.bpm = bpm;
     }
 
+    public void setDivide(int divide) {
+        this.divide = divide;
+    }
+
     public int getBpm() {
         return bpm;
     }
@@ -118,7 +142,7 @@ public class Metronome implements Runnable
         return noteDuration;
     }
 
-    public int getCurrentBeat() {
+    public double getCurrentBeat() {
         return currentBeat;
     }
 
