@@ -1,7 +1,8 @@
 package com.jimjeb.bpmetronome.view;
 
-import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class BPMScene implements BPMScenes{
 
@@ -10,9 +11,15 @@ public class BPMScene implements BPMScenes{
     }
 
     @Override
-    public Scene scene() 
+    public Scene scene(Stage s) 
     {
-        return null;
+        VBox box = new VBox();
+        box.setMinSize(256, 424);
+        box.setMaxSize(256, 424);
+
+        Scene scene = new Scene(box);
+
+        return scene;
     }
     
 }
